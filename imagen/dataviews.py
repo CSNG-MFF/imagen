@@ -15,10 +15,6 @@ class DataView(param.Parameterized):
         """ The initial timestamp. If None, the DataView will not all slicing of
             a time interval and record method will be disabled.""")
 
-    roi = param.Parameter(default=None, doc=
-        """ The bounds of the region of interest (if any). Any attempt to access
-            data outside this region will generate a warning. """)
-
     bounds = param.Parameter(default=None, doc=
         """ The bounds of the two dimensional coordinate system in which the data resides.""")
 
@@ -26,14 +22,22 @@ class DataView(param.Parameterized):
         """ If None, the data is in a non-cyclic dimension.  Otherwise, the data
             is in a cyclic dimension over the given interval.""")
 
-    interval_dtype = param.Parameter(default=OrderedDict if OrderedDict else list, doc=
+    roi = param.Parameter(default=None, doc=
+        """ The bounds of the region of interest (if any). Any attempt to access
+            data outside this region will generate a warning. """)
+
+    map_type = param.Parameter(default=OrderedDict if OrderedDict else list, doc=
        """ The return type for a matched time interval that has been
            specified by slicing.  Constructor of the data type should
            accept a list of (key, value) tuples. When available,
            ordered dictionaries are appropriate.""")
 
-    metadata = param.Dict(default={}, doc=
-       """ Additional metadata to be associated with the Dataview """)
+    labels = param.Dict(default={}, doc=
+       """ Additional labels to be associated with the Dataview. """)
+
+    style = param.Dict(default={}, doc=
+       """ Metadata hints for visualization purposes. """)
+
 
     def __init__(self, data, bounds, **kwargs):
         super(DataView,self).__init__(bounds=bounds, **kwargs)
@@ -71,16 +75,11 @@ class DataView(param.Parameterized):
             start_ind = None if (start is None) else bisect.bisect_left(self._timestamps, start)
             stop_ind = None if (stop is None) else bisect.bisect_left(self._timestamps, stop)
             timeslice = slice(start_ind, stop_ind, step)
-            return self.interval_dtype(zip(self._timestamps[timeslice],
+            return self.map_type(zip(self._timestamps[timeslice],
                                            self._sorted_stack[timeslice]))
 
     def __len__(self):
         return len(self._timestamps) if hasattr(self, '_timestamps') else 1
-
-
-    def _copy_data(self):
-        # Need to copy data but not sure of type.
-        pass
 
     def record(self, data, timestamp):
         """
