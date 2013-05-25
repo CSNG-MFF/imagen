@@ -252,15 +252,36 @@ class TimeDependentValue(NumberGenerator):
     """
     Classes of function objects computing a value given a time function.
     """
-    __abstract = True
 
     time_fn = param.Callable(default=constanttime,doc="""
         Function to generate the time used for calculating values.""")
 
     def __call__(self):
-        raise NotImplementedError
+        return self.time_fn()
 
+class BoxCar(TimeDependentValue):
+    """
+    The boxcar function over the specified time interval. The bounds
+    are exclusive: zero is returned at the onset time and at the
+    offset (onset+duration).
 
+    If duration is None, then this reduces to a step function around the
+    onset value with no offset.
+
+    See http://en.wikipedia.org/wiki/Boxcar_function
+    """
+
+    onset = param.Number(0.0, doc="Time of onset.")
+
+    duration = param.Number(None, allow_None=True,  doc="Duration of step value.")
+
+    def __call__(self):
+        if self.time_fn() <= self.onset:
+            return 0.0
+        elif (self.duration is not None) and (self.time_fn() > self.onset + self.duration):
+            return 0.0
+        else:
+            return 1.0
 
 class ExponentialDecay(TimeDependentValue):
     """
