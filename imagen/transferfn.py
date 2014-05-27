@@ -162,3 +162,17 @@ class DivisiveNormalizeLp(TransferFn):
         if tot != 0:
             factor = (self.norm_value/tot)
             x *=factor
+
+class MaximumDynamicRange(TransferFn):
+    """
+    It linearly maps 0 to the minimum of the image and 1.0 to the maximum in the image.
+    """
+    norm_value = param.Number(default=1.0)
+    
+    def __call__(self,x):
+        mi = numpy.min(x)
+        ma = numpy.max(x)
+
+        if ma-mi != 0:
+                x -= mi
+                x *= 1/(ma-mi)

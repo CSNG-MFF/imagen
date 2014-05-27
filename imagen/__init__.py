@@ -256,8 +256,9 @@ class OrientationContrast(SineGrating):
     changed independently.
     """
 
-    orientationcenter   = param.Number(default=0.0,bounds=(0.0,2*pi), doc="Orientation of the center grating.")
-    orientationsurround = param.Number(default=0.0,bounds=(0.0,2*pi), doc="Orientation of the surround grating.")
+    orientationcenter   = param.Number(default=0.0,bounds=(-pi*2,2*pi), doc="Orientation of the center grating.")
+    #phasecenter   = param.Number(default=0.0,bounds=(0.0,2*pi), doc="Phase of the center grating.")
+    orientationsurround = param.Number(default=0.0,bounds=(-pi*2,2*pi), doc="Orientation of the surround grating.")
     sizecenter     = param.Number(default=0.5,bounds=(0.0,None),softbounds=(0.0,10.0), doc="Size of the center grating.")
     sizesurround   = param.Number(default=1.0,bounds=(0.0,None),softbounds=(0.0,10.0), doc="Size of the surround grating.")
     scalecenter    = param.Number(default=1.0,bounds=(0.0,None),softbounds=(0.0,10.0), doc="Scale of the center grating.")
@@ -271,6 +272,10 @@ class OrientationContrast(SineGrating):
 
     def __call__(self,**params_to_override):
         p = ParamOverrides(self,params_to_override)
+        
+        disk1 = Null(scale=1.0,mask_shape=Disk(smoothing=0,size=p.sizecenter,x=p.x, y=p.y))(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds)
+        disk2 = Null(scale=1.0,mask_shape=Ring(smoothing=0,size=p.sizesurround,thickness=p.thickness,x=p.x, y=p.y))(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds)
+        
         input_1=SineGrating(mask_shape=Disk(smoothing=0,size=1.0),phase=p.phase, frequency=p.frequency,
                             orientation=p.orientationcenter,
                             scale=p.scalecenter, offset=p.offsetcenter,
@@ -280,7 +285,34 @@ class OrientationContrast(SineGrating):
                             x=p.x, y=p.y, size=p.sizesurround)
 
         patterns = [input_1(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds),
-                    input_2(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds)]
+                    input_2(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds),
+                    -(disk1+disk2-1)*p.scalecenter/2.0]
+
+        image_array = numpy.add.reduce(patterns)
+        return image_array
+
+
+class SineGratingDisk(SineGrating):
+    """
+    Circular pattern for testing responses to differences in contrast.
+
+    The pattern contains a sine grating ring surrounding a sine grating disk, each
+    with parameters (orientation, size, scale and offset) that can be
+    changed independently.
+    """
+
+    def __call__(self,**params_to_override):
+        p = ParamOverrides(self,params_to_override)
+        
+        disk = Null(scale=1.0,mask_shape=Disk(smoothing=0,size=p.size,x=p.x, y=p.y))(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds)
+        
+        input1=SineGrating(mask_shape=Disk(smoothing=0,size=1.0),phase=p.phase, frequency=p.frequency,
+                            orientation=p.orientation,
+                            scale=p.scale, offset=p.offset,
+                            x=p.x, y=p.y,size=p.size)
+        
+        patterns = [input1(xdensity=p.xdensity,ydensity=p.ydensity,bounds=p.bounds),
+                    -(disk-1)*self.scale/2]
 
         image_array = numpy.add.reduce(patterns)
         return image_array
