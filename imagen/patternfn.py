@@ -14,8 +14,8 @@ __version__='$Revision$'
 
 from math import pi
 
-from numpy.oldnumeric import where,maximum,cos,sqrt,divide,greater_equal,bitwise_xor,exp
-from numpy.oldnumeric import arcsin,logical_and,logical_or,less,minimum
+from numpy import where,maximum,cos,sqrt,divide,greater_equal,bitwise_xor,exp
+from numpy import arcsin,logical_and,logical_or,less,minimum
 from numpy import seterr, log
 
 from contextlib import contextmanager
