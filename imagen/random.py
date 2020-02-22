@@ -5,7 +5,7 @@ __version__='$Revision$'
 
 import numpy
 
-from numpy.oldnumeric import zeros,floor,where,choose,less,greater,Int,random_array
+from numpy import zeros,floor,where,choose,less,greater,random_array
 
 import param
 from param.parameterized import ParamOverrides
@@ -215,10 +215,10 @@ class RandomDotStereogram(PatternGenerator):
 
         # Construct arrays of points specifying the boundaries of each
         # dot, cropping them by the big image size (0,0) to (bigxsize,bigysize)
-        x1=xpos.astype(Int) ; x1=choose(less(x1,0),(x1,0))
-        y1=ypos.astype(Int) ; y1=choose(less(y1,0),(y1,0))
-        x2=(xpos+(dotsize-1)).astype(Int) ; x2=choose(greater(x2,bigxsize),(x2,bigxsize))
-        y2=(ypos+(dotsize-1)).astype(Int) ; y2=choose(greater(y2,bigysize),(y2,bigysize))
+        x1=xpos.astype(numpy.int) ; x1=choose(less(x1,0),(x1,0))
+        y1=ypos.astype(numpy.int) ; y1=choose(less(y1,0),(y1,0))
+        x2=(xpos+(dotsize-1)).astype(numpy.int) ; x2=choose(greater(x2,bigxsize),(x2,bigxsize))
+        y2=(ypos+(dotsize-1)).astype(numpy.int) ; y2=choose(greater(y2,bigysize),(y2,bigysize))
 
         # Draw each dot in the big image, on a blank background
         bigimage = zeros((bigysize,bigxsize))
