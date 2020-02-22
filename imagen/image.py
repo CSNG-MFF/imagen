@@ -8,7 +8,7 @@ from PIL import Image
 from PIL import ImageOps
 
 import numpy
-from numpy.oldnumeric import array, Float, sum, ravel, ones
+from numpy import array, sum, ravel, ones
 
 import param
 from param.parameterized import overridable_property
@@ -94,7 +94,7 @@ class PatternSampler(ImageSampler):
         # Stores a SheetCoordinateSystem with an activity matrix
         # representing the image
         if not isinstance(image,numpy.ndarray):
-            image = array(image,Float)
+            image = array(image,numpy.float)
 
         rows,cols = image.shape
         self.scs = SheetCoordinateSystem(xdensity=1.0,ydensity=1.0,
@@ -137,7 +137,7 @@ class PatternSampler(ImageSampler):
         pattern_rows,pattern_cols = self.image.shape
 
         if width==0 or height==0 or pattern_cols==0 or pattern_rows==0:
-            return ones(x.shape, Float)*self.background_value
+            return ones(x.shape, numpy.float)*self.background_value
 
         # scale the supplied coordinates to match the pattern being at density=1
         x=x*sheet_xdensity # deliberately don't operate in place (so as not to change supplied x & y)
@@ -236,7 +236,7 @@ class FastImageSampler(ImageSampler):
         # image given the options. (maybe this class needs to be
         # redesigned?  The interface to this function is pretty inscrutable.)
         im = ImageOps.fit(self.image,x.shape,self.sampling_method)
-        return array(im,dtype=Float)
+        return array(im,dtype=numpy.float)
 
 
 
