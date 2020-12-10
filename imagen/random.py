@@ -521,7 +521,7 @@ class SparseNoise(RandomGenerator):
         ps_y = int(round(Ny / ny))
 
         # This is the actual matrix of the pixels
-        A = np.ones(shape) * 0.5
+        A = numpy.ones(shape) * 0.5
 
         if p.grid == False:  #The centers of the spots are randomly distributed in space
 
