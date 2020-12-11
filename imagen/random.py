@@ -521,7 +521,7 @@ class SparseNoise(RandomGenerator):
         ps_y = int(round(Ny / ny))
 
         # This is the actual matrix of the pixels
-        A = np.ones(shape) * 0.5
+        A = numpy.ones(shape) * 0.5
 
         if p.grid == False:  #The centers of the spots are randomly distributed in space
 
@@ -572,3 +572,160 @@ class SparseNoise(RandomGenerator):
                         A[j][i] = Z[x_entry][y_entry]
 
                 return A * p.scale + p.offset
+
+
+
+class DenseNoise(RandomGenerator):
+    """
+    2D Dense noise pattern generator, constrained to a grid.
+
+    Similar to UniformRandom, but draws the noise pattern in a grid
+    that can be smaller than the actual density of the
+    PatternGenerator.
+
+    By default, this produces a matrix with random values 0.0, 0.5, and 1.
+    When a scale and an offset are provided the transformation maps them to:
+
+     0 -> offset
+     0.5 -> offset + 0.5 * scale
+     1 -> offset + scale
+
+    --------
+    Examples
+    --------
+
+    DenseNoise(grid_density=1, bounds=BoundingBox(radius=1),
+        xdensity=4, ydensity=4)  will produce something like this:
+
+    [[ 1.  1.  1.  1.  0.  0.  0.  0. ]
+     [ 1.  1.  1.  1.  0.  0.  0.  0. ]
+     [ 1.  1.  1.  1.  0.  0.  0.  0. ]  Here the Sheet-coordinate size is 2.0x2.0,
+     [ 1.  1.  1.  1.  0.  0.  0.  0. ]  so grid_density=1 yields a 2x2 grid
+     [ 0.  0.  0.  0.  0.5 0.5 0.5 0.5]  sampled at 4 units per grid cell
+     [ 0.  0.  0.  0.  0.5 0.5 0.5 0.5]
+     [ 0.  0.  0.  0.  0.5 0.5 0.5 0.5]
+     [ 0.  0.  0.  0.  0.5 0.5 0.5 0.5]])
+
+
+
+    DenseNoise(grid_density=2, bounds=BoundingBox(radius=1),
+        xdensity=4, ydensity=4)  on the other hand will produce something like:
+
+    [[ 1.  1.  0.  0.  0.  0.  0.5 0.5]
+     [ 1.  1.  0.  0.  0.  0.  0.5 0.5]
+     [ 1.  1.  1.  1.  0.  0.  0.  0. ]  Again the Sheet-coordinate size is 2.0x2.0,
+     [ 1.  1.  1.  1.  0.  0.  0.  0. ]  but grid_density=2 yields a 4x4 grid
+     [ 0.  0.  0.5 0.5 1.  1.  1.  1. ]  with 2 units per grid cell
+     [ 0.  0.  0.5 0.5 1.  1.  1.  1. ]
+     [ 1.  1.  0.  0.  1.  1.  1.  1. ]
+     [ 1.  1.  0.  0.  1.  1.  1.  1. ]]
+
+    -----
+    Notes
+    -----
+
+    1. This method works much faster when the noise matrix falls neatly
+       into the pixel matrix (~100 times faster).
+
+    2. The value of each pixel in the generated pattern is determined
+       by where the center of that pixel lies in the underlying grid,
+       regardless of any overlap of that pixel with other grid
+       squares.
+
+    3. If a particular number of cells N is wanted, divide it by the
+       length of the side of the bounding box to determine the
+       grid_density. For example, if the user wants to have N=10 cells
+       for a BoundingBox(radius=1) (which gives a bounding box size of
+       2.0x2.0), the grid_density must be set to N/2 = 5 in order to
+       have ten cells.
+
+    4. The xdensity and ydensity must both be at least as large as the
+       grid_density, e.g. 5 for the above example.
+    """
+
+    grid_density = param.Number(default=10, bounds=(1,None), softbounds=(1,50), doc="""
+        Grid elements per 1.0 distance in Sheet coordinates.""")
+
+    # Hide unused parameters
+    x = param.Number(precedence=-1)
+    y = param.Number(precedence=-1)
+    size = param.Number(precedence=-1)
+
+
+    def _distrib(self, shape, p):
+        max_density = min(p.xdensity,p.ydensity)
+        if (p.grid_density > max_density and not hasattr(self,"warned_about_density")):
+            self.warning("Requested grid_density %s larger than xdensity %s or ydensity %s; capped at %s" %
+                         (p.grid_density,p.xdensity,p.ydensity,max_density))
+            p.grid_density = max_density
+            self.warned_about_density=True
+
+        Nx = shape[1]
+        Ny = shape[0] # Size of the pixel matrix
+
+        assert (Nx>0 and Ny>0), 'Pixel matrix cannot be zero'
+
+        SC = SheetCoordinateSystem(p.bounds, p.xdensity, p.ydensity)
+        unitary_distance_x = SC._SheetCoordinateSystem__xstep
+        unitary_distance_y = SC._SheetCoordinateSystem__ystep
+
+
+        sheet_x_size = unitary_distance_x * Nx
+        sheet_y_size = unitary_distance_y * Ny
+
+        # Sizes of the structure matrix
+        nx = int(round(sheet_x_size * p.grid_density))  # Number of points in the x's
+        ny = int(round(sheet_y_size * p.grid_density))  # Number of points in the y's
+
+        assert ( nx > 0 ), 'Grid density or bound box in the x dimension too small'
+        assert ( ny > 0 ), 'Grid density or bound box in the y dimension too small'
+
+        # If the noise grid is proportional to the pixel grid and fits
+        # neatly into it then this method is ~100 times faster
+        if ( Nx % nx == 0) and (Ny % ny == 0):
+
+            if (Nx == nx) and (Ny == ny):  #This is faster to call the whole procedure
+                result = 0.5 * (p.random_generator.randint(-1, 2, shape) + 1)
+                return  result * p.scale + p.offset
+
+            else:
+                # This is the actual matrix of the pixels
+                A = numpy.zeros(shape)
+                # Noise matrix that contains the structure of 0, 0.5, and 1's
+                Z = 0.5 * (p.random_generator.randint(-1, 2, (nx, ny)) + 1 )
+
+                ps_x = int(round(Nx * 1.0/ nx))  #Closest integer
+                ps_y = int(round(Ny * 1.0/ ny))
+
+                # Noise matrix is mapped to the pixel matrix
+                for i in range(nx):
+                    for j in range(ny):
+                        A[i * ps_y: (i + 1) * ps_y, j * ps_x: (j + 1) * ps_x] = Z[i,j]
+
+                return A * p.scale + p.offset
+
+        # General method in case the noise grid does not
+        # fall neatly in the pixel grid
+        else:
+
+            # Obtain length of the side and length of the
+            # division line between the grid
+            x_points,y_points = SC.sheetcoordinates_of_matrixidx()
+
+            # This is the actual matrix of the pixels
+            A = numpy.zeros(shape)
+            # Noise matrix that contains the structure of 0, 0.5, and 1's
+            Z = 0.5 * (p.random_generator.randint(-1, 2, (nx, ny)) + 1 )
+
+            size_of_block_x = Nx * 1.0 / nx
+            size_of_block_y = Ny * 1.0 / ny
+
+            # Noise matrix is mapped to the pixel matrix
+            for i in range(Nx):
+                for j in range(Ny):
+                    # Map along the x coordinates
+                    x_entry = int( i / size_of_block_x)
+                    y_entry = int( j / size_of_block_y)
+                    A[j][i] = Z[x_entry][y_entry]
+
+            return A * p.scale + p.offset
