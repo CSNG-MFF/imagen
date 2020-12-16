@@ -10,9 +10,9 @@ from numpy import zeros,floor,where,choose,less,greater
 import param
 from param.parameterized import ParamOverrides
 
-from patterngenerator import PatternGenerator
+from .patterngenerator import PatternGenerator
 from . import Composite, Gaussian
-from sheetcoords import SheetCoordinateSystem
+from .sheetcoords import SheetCoordinateSystem
 
 
 

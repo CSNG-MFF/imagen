@@ -25,10 +25,10 @@ from param.parameterized import ParamOverrides
 from param import ClassSelector
 
 # Imported here so that all PatternGenerators will be in the same package
-from patterngenerator import Constant, PatternGenerator
+from .patterngenerator import Constant, PatternGenerator
 
-from sheetcoords import SheetCoordinateSystem
-from patternfn import gaussian,exponential,gabor,line,disk,ring,\
+from .sheetcoords import SheetCoordinateSystem
+from .patternfn import gaussian,exponential,gabor,line,disk,ring,\
     sigmoid,arc_by_radian,arc_by_center,smooth_rectangle,float_error_ignore, \
     log_gaussian
 #from random import UniformRandom
@@ -1273,7 +1273,7 @@ class TimeSeries(param.Parameterized):
 
 
 def generate_sine_wave(duration, frequency, sample_rate):
-    time_axis = linspace(0.0, duration, duration*sample_rate)
+    time_axis = linspace(0.0, int(duration), int(duration*sample_rate))
     return sin(2.0*pi*frequency * time_axis)
 
 
@@ -1496,7 +1496,7 @@ class Spectrogram(PowerSpectrum):
 
 
 _public = list(set([_k for _k,_v in locals().items() if isinstance(_v,type) and issubclass(_v,PatternGenerator)]))
-del _k,_v
+#del _k,_v
 __all__ = _public + ["image","random"]
 
 # Avoids loading the audio and opencvcamera modules, which rely on external
