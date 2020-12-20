@@ -205,14 +205,14 @@ class RandomDotStereogram(PatternGenerator):
         random_seed = p.random_seed
 
         
-        np.random.seed(random_seed*12+random_seed*99)
-        col=np.where(np.random.random((ndots))>=0.5, 1.0, -1.0)
+        numpy.random.seed(random_seed*12+random_seed*99)
+        col=numpy.where(numpy.random.random((ndots))>=0.5, 1.0, -1.0)
 
-        np.random.seed(random_seed*122+random_seed*799)
-        xpos=np.floor(np.random.random((ndots))*(bigxsize+2*dotsize)) - halfdot
+        numpy.random.seed(random_seed*122+random_seed*799)
+        xpos=numpy.floor(numpy.random.random((ndots))*(bigxsize+2*dotsize)) - halfdot
 
-        np.random.seed(random_seed*1243+random_seed*9349)
-        ypos=np.floor(np.random.random((ndots))*(bigysize+2*dotsize)) - halfdot
+        numpy.random.seed(random_seed*1243+random_seed*9349)
+        ypos=numpy.floor(numpy.random.random((ndots))*(bigysize+2*dotsize)) - halfdot
         
         
         
@@ -353,7 +353,7 @@ class DenseNoise(RandomGenerator):
 
             else:
                 # This is the actual matrix of the pixels
-                A = np.zeros(shape)
+                A = numpy.zeros(shape)
                 # Noise matrix that contains the structure of 0, 0.5, and 1's
                 Z = 0.5 * (p.random_generator.randint(-1, 2, (nx, ny)) + 1 )
 
@@ -376,7 +376,7 @@ class DenseNoise(RandomGenerator):
             x_points,y_points = SC.sheetcoordinates_of_matrixidx()
 
             # This is the actual matrix of the pixels
-            A = np.zeros(shape)
+            A = numpy.zeros(shape)
             # Noise matrix that contains the structure of 0, 0.5, and 1's
             Z = 0.5 * (p.random_generator.randint(-1, 2, (nx, ny)) + 1 )
 
@@ -557,7 +557,7 @@ class SparseNoise(RandomGenerator):
                 size_of_block_y = Ny * 1.0 / ny
 
                 # Construct the noise matrix
-                Z = np.ones((nx,ny)) * 0.5
+                Z = numpy.ones((nx,ny)) * 0.5
                 x = p.random_generator.randint(0, nx)
                 y = p.random_generator.randint(0, ny)
                 z = p.random_generator.randint(0,2)
