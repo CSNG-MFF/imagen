@@ -173,6 +173,14 @@ class MaximumDynamicRange(TransferFn):
         mi = numpy.min(x)
         ma = numpy.max(x)
 
-        if ma-mi != 0:
-                x -= mi
-                x *= 1/(ma-mi)
+
+class FixedNorm(TransferFn):
+    """
+    The assumption of this transfer function is that the maximum admisable value in the image is the norm_value. E.g. in standard grayscale norm_value=255.
+    The transfer function then linearly maps the range [0,norm_value] to [0,1].
+    """
+    norm_value = param.Number(default=255.0)
+    
+    def __call__(self,x):
+        assert numpy.max(x) <= self.norm_value, "norm_value parameter (%g) is smaller than maximum value in the image (%g)" % (self.norm_value,numpy.max(x))
+        x \= self.norm_value
