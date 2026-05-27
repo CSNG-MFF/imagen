@@ -183,4 +183,4 @@ class FixedNorm(TransferFn):
     
     def __call__(self,x):
         assert numpy.max(x) <= self.norm_value, "norm_value parameter (%g) is smaller than maximum value in the image (%g)" % (self.norm_value,numpy.max(x))
-        x \= self.norm_value
+        x /= self.norm_value
