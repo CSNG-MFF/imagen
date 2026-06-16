@@ -77,7 +77,7 @@ outside of the actual matrix.
 __version__ = '$Revision$'
 
 
-from numpy import array,floor,ceil,round_,arange
+from numpy import array,floor,ceil,arange
 
 from .boundingregion import BoundingBox
 
@@ -296,7 +296,7 @@ class SheetCoordinateSystem(object):
         # Round eliminates any precision errors that have been compounded
         # via floating point operations so that the rounded number will better
         # match the floating number that we type in.
-        return round_(x,10),round_(y,10)
+        return around(x,10),around(y,10)
 
 
     def closest_cell_center(self,x,y):

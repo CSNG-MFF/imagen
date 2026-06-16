@@ -16,8 +16,8 @@ __version__='$Revision$'
 
 import numpy
 from numpy import around, bitwise_and, bitwise_or
-from numpy import abs, add, alltrue, array, ceil, clip, cos, fft, flipud, \
-        floor, fmod, exp, hstack, Infinity, linspace, multiply, nonzero, pi, \
+from numpy import abs, add, array, ceil, clip, cos, fft, flipud, \
+        floor, fmod, exp, hstack, linspace, multiply, nonzero, pi, \
         repeat, sin, sqrt, subtract, tile, zeros, sum, max
 
 import param
@@ -704,7 +704,7 @@ class SeparatedComposite(Composite):
             for trial in xrange(self.max_trials):
                 # Generate a new position and add generator if it's ok
 
-                if alltrue([self.__distance_valid(g,v,p) for v in valid_generators]):
+                if all([self.__distance_valid(g,v,p) for v in valid_generators]):
                     valid_generators.append(g)
                     break
 
@@ -1105,8 +1105,8 @@ class LogGaussian(PatternGenerator):
         pattern_x = add.outer(sin(p.orientation)*y, cos(p.orientation)*x) + offset
         pattern_y = subtract.outer(cos(p.orientation)*y, sin(p.orientation)*x) + offset
 
-        clip(pattern_x, 0, Infinity, out=pattern_x)
-        clip(pattern_y, 0, Infinity, out=pattern_y)
+        clip(pattern_x, 0, numpy.inf, out=pattern_x)
+        clip(pattern_y, 0, numpy.inf, out=pattern_y)
 
         return pattern_x, pattern_y
 
