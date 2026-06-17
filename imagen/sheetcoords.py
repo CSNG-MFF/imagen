@@ -77,7 +77,7 @@ outside of the actual matrix.
 __version__ = '$Revision$'
 
 
-from numpy import array,floor,ceil,arange
+from numpy import array,floor,ceil,arange, around
 
 from .boundingregion import BoundingBox
 
