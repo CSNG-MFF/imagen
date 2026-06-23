@@ -173,6 +173,10 @@ class MaximumDynamicRange(TransferFn):
         mi = numpy.min(x)
         ma = numpy.max(x)
 
+        if ma-mi != 0:
+           x -= mi
+           x *= 1/(ma-mi)
+
 
 class FixedNorm(TransferFn):
     """
